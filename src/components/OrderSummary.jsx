@@ -9,9 +9,12 @@ import { firestore } from "../firebase"
 import { collection, doc, getDoc, getDocs, addDoc, query, where} from 'firebase/firestore'
 import { storage } from '../firebase';
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 
 const OrderSummary = ({ cart , setCart }) => {
+
+	const navigate = useNavigate();
 
 	const [subtotal, setSubtotal] = useState(0);
 

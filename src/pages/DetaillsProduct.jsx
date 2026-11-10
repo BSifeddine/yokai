@@ -11,9 +11,11 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
 
 function DetaillsProduct({ cart, setCart }) {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [reviews, setReviews] = useState([]);
   const newWilayas = Object.keys(wilayas);
@@ -335,7 +337,8 @@ const addProduct = (e) => {
       toast.warning("الرجاء اختيار اللون والمقاس للقطعة الثالثة");
       return false;
     } else {
-      toast.success("تم الشراء بنجاح");
+      // Inside your order success handler:
+      navigate("/thank-you", { state: { success: true } });
       return true;
     }
   };
@@ -423,8 +426,6 @@ const addProduct = (e) => {
       setProd1({ taille1: "", color1: "" });
       setProd2({ taille2: "", color2: "" });
       setProd3({ taille3: "", color3: "" });
-      // Inside your order success handler:
-      navigate("/thank-you", { state: { success: true } });
     }
   };
 
