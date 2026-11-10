@@ -12,7 +12,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.title = "Art Tshirt";
+    document.title = "YOKAI";
     window.scrollTo(0, 0);
   }, []);
 

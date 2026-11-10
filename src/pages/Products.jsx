@@ -29,7 +29,7 @@ function Products() {
 	  }, []);
 
       useEffect(() => {
-		document.title = "Art Tshirt | Produits"
+		document.title = "YOKAI | Produits"
 		window.scrollTo(0, 0);
 	  }, []); 
 
