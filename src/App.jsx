@@ -63,6 +63,7 @@ function App() {
          <Route path='/stock/:filter' element={<StockPage />} />
          <Route path='/produit/:id' element={<DetaillsProduct cart={cart} setCart={setCart}/>} />
          <Route path='/se_connecter_admin' element={<Login />} />
+         <Route path="/thank-you" element={<ThankYouPage />} />
          <Route path='*' element={<PageNotFound />} />
       </Routes>
       <ToastContainer

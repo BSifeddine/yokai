@@ -423,6 +423,8 @@ const addProduct = (e) => {
       setProd1({ taille1: "", color1: "" });
       setProd2({ taille2: "", color2: "" });
       setProd3({ taille3: "", color3: "" });
+      // Inside your order success handler:
+      navigate("/thank-you", { state: { success: true } });
     }
   };
 

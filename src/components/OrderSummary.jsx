@@ -312,6 +312,8 @@ const OrderSummary = ({ cart , setCart }) => {
 		  setCart([])
 		  setPrix(0)
 		  setPrixTotal(0)
+		  // Inside your order success handler:
+			navigate("/thank-you", { state: { success: true } });
 		}
 		}
 		

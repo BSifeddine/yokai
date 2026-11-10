@@ -12,7 +12,7 @@ function Footer() {
               <Link to="https://www.instagram.com/yokai.streetwear_/" className='relative group' target='_blank'>
                 <Instagram className='inline-block mr-1 group-hover:text-orange-600 text-gray-800' size={20}/>
               </Link>
-              <Link to="https://www.facebook.com/profile.php?id=100089084718409" className='relative group'>
+              <Link to="https://www.facebook.com/profile.php?id=61594027424660" className='relative group'>
                 <Facebook className='inline-block mr-1 group-hover:text-orange-600 text-gray-800' size={20}/>
               </Link>
             </nav>

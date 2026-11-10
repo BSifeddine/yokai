@@ -1,33 +1,20 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "../../supabaseClient"; // Adjust path to your supabase client
+import { supabase } from "../../supabaseClient";
 
 const CategoryItem = ({ category }) => {
-  const [imageUrl, setImageUrl] = useState(null); // State to store the image URL
+  // Compute the public URL directly without needing async/await or useEffect
+  const getCategoryImageUrl = () => {
+    if (!category?.image) return null;
+    
+    const filePath = `categories/${category.image}`;
+    const { data } = supabase.storage
+      .from("products")
+      .getPublicUrl(filePath);
 
-  useEffect(() => {
-    const fetchImage = async () => {
-      try {
-        if (!category?.image) return;
+    return data?.publicUrl || null;
+  };
 
-        // Construct the file path inside your Supabase storage bucket 
-        // (Assuming a 'categories' folder inside your bucket, matching your old path logic)
-        const filePath = `categories/${category.image}`;
-
-        const { data } = supabase.storage
-          .from('products') // Or your specific bucket name if different
-          .getPublicUrl(filePath);
-
-        if (data?.publicUrl) {
-          setImageUrl(data.publicUrl);
-        }
-      } catch (error) {
-        console.error("Error fetching image URL from Supabase:", error);
-      }
-    };
-
-    fetchImage();
-  }, [category?.image]);
+  const imageUrl = getCategoryImageUrl();
 
   return (
     <div className="relative overflow-hidden h-40 sm:h-96 sm:w-full rounded-lg group shadow-xl">
