@@ -46,7 +46,7 @@ const ThankYouPage = () => {
         <button
           type="button"
           onClick={() => navigate("/", { replace: true })}
-          className="w-full py-3 px-6 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-orange-500/20"
+          className="w-full py-3 px-6 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/20"
         >
           حسناً (العودة للرئيسية)
         </button>

@@ -147,7 +147,8 @@ const OrderSummary = ({ cart , setCart }) => {
 			toast.warning("الرجاء اختيار البلدية")
 			return false 
 		  }else{
-			toast.success("تم الشراء بنجاح")
+			// Inside your order success handler:
+			navigate("/thank-you", { state: { success: true } });
 			return true
 		  }
 		}
@@ -315,8 +316,6 @@ const OrderSummary = ({ cart , setCart }) => {
 		  setCart([])
 		  setPrix(0)
 		  setPrixTotal(0)
-		  // Inside your order success handler:
-			navigate("/thank-you", { state: { success: true } });
 		}
 		}
 		
