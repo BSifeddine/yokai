@@ -19,7 +19,6 @@ export const MyContext = createContext();
 
 function App() {
 
-
   const [isAdmin, setIsAdmin] = useState(false)
   const [reload, setReload] = useState(false)
   const nav = useNavigate()
