@@ -13,6 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import PageNotFound from './components/PageNotFound'
 import Login from './components/Login'
 import StockPage from './pages/Stock'
+import ThankYou from './pages/ThankYou'
 
 export const MyContext = createContext();
 
@@ -63,7 +64,7 @@ function App() {
          <Route path='/stock/:filter' element={<StockPage />} />
          <Route path='/produit/:id' element={<DetaillsProduct cart={cart} setCart={setCart}/>} />
          <Route path='/se_connecter_admin' element={<Login />} />
-         <Route path="/thank-you" element={<ThankYouPage />} />
+         <Route path="/thank-you" element={<ThankYou />} />
          <Route path='*' element={<PageNotFound />} />
       </Routes>
       <ToastContainer
