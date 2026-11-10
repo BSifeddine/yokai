@@ -13,7 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import PageNotFound from './components/PageNotFound'
 import Login from './components/Login'
 import StockPage from './pages/Stock'
-import ThankYou from './pages/ThankYou'
+import ThankYou from './pages/Thankyou'
 
 export const MyContext = createContext();
 
