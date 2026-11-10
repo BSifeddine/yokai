@@ -48,7 +48,7 @@ const CategoryItem = ({ category }) => {
             </div>
           </div>
         ) : (
-          <div className="w-full h-full bg-slate-300 animate-pulse" />
+          <div className="w-full h-full bg-slate-300 animate-pulse"/>
         )}
       </Link>
     </div>
