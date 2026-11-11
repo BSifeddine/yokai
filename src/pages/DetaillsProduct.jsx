@@ -217,7 +217,7 @@ function DetaillsProduct({ cart, setCart }) {
       : "";*/
     
       const singleColor = produit?.color[0] 
-
+      window.alert(singleColor)
     setFormData((prev) => ({
       ...prev, 
       prix: produit.price || 0, 
