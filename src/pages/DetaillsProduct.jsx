@@ -220,6 +220,7 @@ function DetaillsProduct({ cart, setCart }) {
 
   // Auto-select single color when product loads or updates
   useEffect(() => {
+    windows.alert(produit.colors)
     if (produit) {
       const colorsArr = getColorsArray(produit.colors);
       const singleColor = colorsArr.length === 1 ? colorsArr[0] : "";
