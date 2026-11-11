@@ -216,7 +216,7 @@ function DetaillsProduct({ cart, setCart }) {
       ? produit.colors[0] 
       : "";*/
     
-      const singleColor = true
+      const singleColor = true 
 
     setFormData((prev) => ({ 
       ...prev, 
