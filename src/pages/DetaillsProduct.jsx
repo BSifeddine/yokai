@@ -448,7 +448,7 @@ function DetaillsProduct({ cart, setCart }) {
       setProd3({ taille3: "", color3: "" });
     }
   };
-
+ 
   if (loading) {
     return (
       <div className="w-full h-96 flex flex-col justify-center items-center gap-4 py-32">
