@@ -1,3 +1,18 @@
+import { ArrowDown, ArrowDownAZ, Check, ChevronDown, ChevronUp, ShoppingBag, ShoppingCart } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { wilayas } from '../wilayas';
+import { livraisonSD } from '../livraisonSD';
+import { livraisonDomicile } from '../livraisonDomicile';
+import { firestore } from "../firebase";
+import { collection, doc, getDoc, getDocs, addDoc, query, where } from 'firebase/firestore';
+import ReviewItem from '../components/ReviewItem'; 
+import FeaturedProducts from '../components/FeaturedProducts'; 
+import { useParams } from 'react-router-dom';
+import { supabase } from '../../supabaseClient';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
+
 function DetaillsProduct({ cart, setCart }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -416,7 +431,7 @@ function DetaillsProduct({ cart, setCart }) {
           note: "",
         });
       }
- 
+
       setFormData({
         name: "",
         num: "",
@@ -434,7 +449,7 @@ function DetaillsProduct({ cart, setCart }) {
     }
   };
 
-  if (loading) { 
+  if (loading) {
     return (
       <div className="w-full h-96 flex flex-col justify-center items-center gap-4 py-32">
         <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
