@@ -1,17 +1,23 @@
-import { ArrowDown, ArrowDownAZ, Check, ChevronDown, ChevronUp, ShoppingBag, ShoppingCart } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { wilayas } from '../wilayas';
-import { livraisonSD } from '../livraisonSD';
-import { livraisonDomicile } from '../livraisonDomicile';
-import { firestore } from "../firebase";
-import { collection, doc, getDoc, getDocs, addDoc, query, where } from 'firebase/firestore';
-import ReviewItem from '../components/ReviewItem'; 
-import FeaturedProducts from '../components/FeaturedProducts'; 
-import { useParams } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { doc, getDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { toast } from 'react-toastify';
+// Make sure to import your wilayas, livraisonSD, livraisonDomicile, firestore, supabase, etc.
+
+// Helper to safely extract colors whether it's a JS array, JSON string, or comma-separated string
+const getColorsArray = (colorsData) => {
+  if (!colorsData) return [];
+  if (Array.isArray(colorsData)) return colorsData;
+  if (typeof colorsData === 'string') {
+    try {
+      const parsed = JSON.parse(colorsData);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      return colorsData.split(',').map((c) => c.trim()).filter(Boolean);
+    }
+  }
+  return [];
+};
 
 function DetaillsProduct({ cart, setCart }) {
   const { id } = useParams();
@@ -186,48 +192,49 @@ function DetaillsProduct({ cart, setCart }) {
     fetchReviews();
   }, [id]);
 
-  // Auto-select single color & update price based on offer
+  // Handle offer changes while preserving single color auto-selection
   useEffect(() => {
-    const singleColor = produit?.colors && Array.isArray(produit.colors) && produit.colors.length === 1 
-      ? produit.colors[0] 
-      : "";
+    const colorsArr = getColorsArray(produit?.colors);
+    const singleColor = colorsArr.length === 1 ? colorsArr[0] : "";
 
     if (formData.offer == 1) {
-      setProd2({ taille2: "", color2: singleColor });
-      setFormData((prev) => ({ ...prev, prix: produit.price }));
-      setProd3({ taille3: "", color3: singleColor });
-    } else if (formData.offer == 2) {
-      setProd3({ taille3: "", color3: singleColor });
-      setFormData((prev) => ({ ...prev, prix: produit.offer2 }));
+      setFormData((prev) => ({ ...prev, prix: produit?.price || 0 }));
       if (singleColor) {
+        setProd1((prev) => ({ ...prev, color1: singleColor }));
+      }
+    } else if (formData.offer == 2) {
+      setFormData((prev) => ({ ...prev, prix: produit?.offer2 || 0 }));
+      if (singleColor) {
+        setProd1((prev) => ({ ...prev, color1: singleColor }));
         setProd2((prev) => ({ ...prev, color2: singleColor }));
       }
     } else {
-      setFormData((prev) => ({ ...prev, prix: produit.offer3 }));
+      setFormData((prev) => ({ ...prev, prix: produit?.offer3 || 0 }));
       if (singleColor) {
+        setProd1((prev) => ({ ...prev, color1: singleColor }));
         setProd2((prev) => ({ ...prev, color2: singleColor }));
         setProd3((prev) => ({ ...prev, color3: singleColor }));
       }
     }
   }, [formData.offer, produit]);
 
+  // Auto-select single color when product loads or updates
   useEffect(() => {
-    /*const singleColor = produit?.colors && Array.isArray(produit.colors) && produit.colors.length === 1 
-      ? produit.colors[0] 
-      : "";*/
-    
-      const singleColor = produit?.color[0] 
-      window.alert(singleColor)
-    setFormData((prev) => ({
-      ...prev,  
-      prix: produit.price || 0, 
-      prix_total: produit.price || 0 
-    }));
+    if (produit) {
+      const colorsArr = getColorsArray(produit.colors);
+      const singleColor = colorsArr.length === 1 ? colorsArr[0] : "";
 
-    if (singleColor) {
-      setProd1((prev) => ({ ...prev, color1: singleColor }));
-      setProd2((prev) => ({ ...prev, color2: singleColor }));
-      setProd3((prev) => ({ ...prev, color3: singleColor }));
+      setFormData((prev) => ({ 
+        ...prev, 
+        prix: produit.price || 0, 
+        prix_total: produit.price || 0 
+      }));
+
+      if (singleColor) {
+        setProd1((prev) => ({ ...prev, color1: singleColor }));
+        setProd2((prev) => ({ ...prev, color2: singleColor }));
+        setProd3((prev) => ({ ...prev, color3: singleColor }));
+      }
     }
   }, [produit]);
 
@@ -235,6 +242,7 @@ function DetaillsProduct({ cart, setCart }) {
     setFormData((prev) => ({ ...prev, prix_total: parseInt(prev.prix || 0) + parseInt(prev.montant_livraison || 0) }));
   }, [formData.prix, formData.montant_livraison]);
 
+  // Fetch product images from Supabase
   useEffect(() => {
     const fetchImages = async () => {
       try {
@@ -433,7 +441,7 @@ function DetaillsProduct({ cart, setCart }) {
           note: "",
         });
       }
- 
+
       setFormData({
         name: "",
         num: "",
@@ -450,6 +458,7 @@ function DetaillsProduct({ cart, setCart }) {
       setProd3({ taille3: "", color3: "" });
     }
   };
+
 
   if (loading) {
     return (
