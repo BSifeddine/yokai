@@ -212,9 +212,11 @@ function DetaillsProduct({ cart, setCart }) {
   }, [formData.offer, produit]);
 
   useEffect(() => {
-    const singleColor = produit?.colors && Array.isArray(produit.colors) && produit.colors.length === 1 
+    /*const singleColor = produit?.colors && Array.isArray(produit.colors) && produit.colors.length === 1 
       ? produit.colors[0] 
-      : "";
+      : "";*/
+    
+      const singleColor = true
 
     setFormData((prev) => ({ 
       ...prev, 
