@@ -434,7 +434,7 @@ function DetaillsProduct({ cart, setCart }) {
     }
   };
 
-  if (!loading) { 
+  if (loading) { 
     return (
       <div className="w-full h-96 flex flex-col justify-center items-center gap-4 py-32">
         <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
