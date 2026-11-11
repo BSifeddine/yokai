@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
-// Make sure to import your wilayas, livraisonSD, livraisonDomicile, firestore, supabase, etc.
 
 // Helper to safely extract colors whether it's a JS array, JSON string, or comma-separated string
 const getColorsArray = (colorsData) => {
@@ -148,6 +147,7 @@ function DetaillsProduct({ cart, setCart }) {
     loadCartFromLocalStorage();
   }, []);
 
+  // Fetch document & immediately auto-select color if array has length of 1
   useEffect(() => {
     const fetchDocument = async () => {
       try {
@@ -155,7 +155,25 @@ function DetaillsProduct({ cart, setCart }) {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setProduit(docSnap.data());
+          const data = docSnap.data();
+          setProduit(data);
+
+          // Extract colors and auto-select if exactly 1
+          const colorsArr = getColorsArray(data.colors);
+          console.log("Fetched colors array:", colorsArr); // Debug log
+
+          if (colorsArr.length === 1) {
+            const singleColor = colorsArr[0];
+            setProd1({ taille1: "", color1: singleColor });
+            setProd2({ taille2: "", color2: singleColor });
+            setProd3({ taille3: "", color3: singleColor });
+          }
+
+          setFormData((prev) => ({ 
+            ...prev, 
+            prix: data.price || 0, 
+            prix_total: data.price || 0 
+          }));
         } else {
           console.log("No such document!");
         }
@@ -217,27 +235,6 @@ function DetaillsProduct({ cart, setCart }) {
       }
     }
   }, [formData.offer, produit]);
-
-  // Auto-select single color when product loads or updates
-  useEffect(() => {
-    windows.alert(produit.colors) 
-    if (produit) {
-      const colorsArr = getColorsArray(produit.colors);
-      const singleColor = colorsArr.length === 1 ? colorsArr[0] : "";
-
-      setFormData((prev) => ({ 
-        ...prev, 
-        prix: produit.price || 0, 
-        prix_total: produit.price || 0 
-      }));
-
-      if (singleColor) {
-        setProd1((prev) => ({ ...prev, color1: singleColor }));
-        setProd2((prev) => ({ ...prev, color2: singleColor }));
-        setProd3((prev) => ({ ...prev, color3: singleColor }));
-      }
-    }
-  }, [produit]);
 
   useEffect(() => {
     setFormData((prev) => ({ ...prev, prix_total: parseInt(prev.prix || 0) + parseInt(prev.montant_livraison || 0) }));
@@ -459,7 +456,6 @@ function DetaillsProduct({ cart, setCart }) {
       setProd3({ taille3: "", color3: "" });
     }
   };
-
 
   if (loading) {
     return (
