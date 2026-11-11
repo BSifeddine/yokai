@@ -449,7 +449,7 @@ function DetaillsProduct({ cart, setCart }) {
         prix: produit?.price,
         type_livraison: 'domicile',
         montant_livraison: 0,
-        prix_total: 0,
+        prix_total: 0, 
       });
       setProd1({ taille1: "", color1: "" });
       setProd2({ taille2: "", color2: "" });
