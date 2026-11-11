@@ -218,7 +218,7 @@ function DetaillsProduct({ cart, setCart }) {
     
       const singleColor = produit?.color[0] 
 
-    setFormData((prev) => ({ 
+    setFormData((prev) => ({
       ...prev, 
       prix: produit.price || 0, 
       prix_total: produit.price || 0 
