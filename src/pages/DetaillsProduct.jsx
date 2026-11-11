@@ -431,7 +431,7 @@ function DetaillsProduct({ cart, setCart }) {
           note: "",
         });
       }
-
+ 
       setFormData({
         name: "",
         num: "",
