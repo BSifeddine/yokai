@@ -14,7 +14,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from "react-router-dom";
 
 function DetaillsProduct({ cart, setCart }) {
-  
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -58,11 +57,9 @@ function DetaillsProduct({ cart, setCart }) {
     setHasLoaded(true);
   };
 
-const addProduct = (e) => {
+  const addProduct = (e) => {
     e.preventDefault();
     
-    // Grab the first image URL available in your component state or product object
-    // (Adjust 'imageURLs[0]' or 'produit.image' to match the exact variable name holding your image URL string)
     const firstImageUrl = (imageURLs && imageURLs.length > 0 ? imageURLs[0] : produit?.image) || "";
 
     if (parseInt(cart.length) + parseInt(formData.offer) <= 5) {
@@ -73,7 +70,7 @@ const addProduct = (e) => {
             taille: prod1.taille1,
             color: prod1.color1,
             price: produit.price,
-            image: firstImageUrl, // <--- Saves the first image URL string
+            image: firstImageUrl,
           };
           setCart((prevCart) => [...prevCart, product]);
           toast.success("تمت الاضافة الى السلة");
@@ -189,38 +186,61 @@ const addProduct = (e) => {
     fetchReviews();
   }, [id]);
 
+  // Auto-select single color & update price based on offer
   useEffect(() => {
+    const singleColor = produit?.colors && Array.isArray(produit.colors) && produit.colors.length === 1 
+      ? produit.colors[0] 
+      : "";
+
     if (formData.offer == 1) {
-      setProd2({ taille2: "", color2: "" });
-      setFormData({ ...formData, prix: produit.price });
-      setProd3({ taille3: "", color3: "" });
+      setProd2({ taille2: "", color2: singleColor });
+      setFormData((prev) => ({ ...prev, prix: produit.price }));
+      setProd3({ taille3: "", color3: singleColor });
     } else if (formData.offer == 2) {
-      setProd3({ taille3: "", color3: "" });
-      setFormData({ ...formData, prix: produit.offer2 });
+      setProd3({ taille3: "", color3: singleColor });
+      setFormData((prev) => ({ ...prev, prix: produit.offer2 }));
+      if (singleColor) {
+        setProd2((prev) => ({ ...prev, color2: singleColor }));
+      }
     } else {
-      setFormData({ ...formData, prix: produit.offer3 });
+      setFormData((prev) => ({ ...prev, prix: produit.offer3 }));
+      if (singleColor) {
+        setProd2((prev) => ({ ...prev, color2: singleColor }));
+        setProd3((prev) => ({ ...prev, color3: singleColor }));
+      }
     }
-  }, [formData.offer]);
+  }, [formData.offer, produit]);
 
   useEffect(() => {
-    setFormData({ ...formData, prix: produit.price, prix_total: produit.price });
+    const singleColor = produit?.colors && Array.isArray(produit.colors) && produit.colors.length === 1 
+      ? produit.colors[0] 
+      : "";
+
+    setFormData((prev) => ({ 
+      ...prev, 
+      prix: produit.price || 0, 
+      prix_total: produit.price || 0 
+    }));
+
+    if (singleColor) {
+      setProd1((prev) => ({ ...prev, color1: singleColor }));
+      setProd2((prev) => ({ ...prev, color2: singleColor }));
+      setProd3((prev) => ({ ...prev, color3: singleColor }));
+    }
   }, [produit]);
 
   useEffect(() => {
-    setFormData({ ...formData, prix_total: parseInt(formData.prix || 0) + parseInt(formData.montant_livraison || 0) });
+    setFormData((prev) => ({ ...prev, prix_total: parseInt(prev.prix || 0) + parseInt(prev.montant_livraison || 0) }));
   }, [formData.prix, formData.montant_livraison]);
 
-  // Fetch product images from Supabase
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        // 1. Direct match from Firestore document (stored as array on upload)
         if (produit.images && produit.images.length > 0) {
           setImageURLs(produit.images);
           return;
         }
 
-        // 2. Fallback filter for files in the 'products' bucket matching product name
         if (produit.name) {
           const { data, error } = await supabase.storage
             .from('products')
@@ -267,7 +287,7 @@ const addProduct = (e) => {
     setCommunes(wilayas[formData.wilaya] || []);
     setSd(livraisonSD[formData.wilaya] || 0);
     setDomicile(livraisonDomicile[formData.wilaya] || 0);
-    setFormData({ ...formData, commun: "" });
+    setFormData((prev) => ({ ...prev, commun: "" }));
   }, [formData.wilaya]);
 
   useEffect(() => {
@@ -338,7 +358,6 @@ const addProduct = (e) => {
       toast.warning("الرجاء اختيار اللون والمقاس للقطعة الثالثة");
       return false;
     } else {
-      // Inside your order success handler:
       navigate("/thank-you", { state: { success: true } });
       return true;
     }
