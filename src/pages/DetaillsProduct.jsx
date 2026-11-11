@@ -1,23 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
-import { toast } from 'react-toastify';
-
-// Helper to safely extract colors whether it's a JS array, JSON string, or comma-separated string
-const getColorsArray = (colorsData) => {
-  if (!colorsData) return [];
-  if (Array.isArray(colorsData)) return colorsData;
-  if (typeof colorsData === 'string') {
-    try {
-      const parsed = JSON.parse(colorsData);
-      if (Array.isArray(parsed)) return parsed;
-    } catch (e) {
-      return colorsData.split(',').map((c) => c.trim()).filter(Boolean);
-    }
-  }
-  return [];
-};
-
 function DetaillsProduct({ cart, setCart }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -147,7 +127,6 @@ function DetaillsProduct({ cart, setCart }) {
     loadCartFromLocalStorage();
   }, []);
 
-  // Fetch document & immediately auto-select color if array has length of 1
   useEffect(() => {
     const fetchDocument = async () => {
       try {
@@ -155,25 +134,7 @@ function DetaillsProduct({ cart, setCart }) {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const data = docSnap.data();
-          setProduit(data);
-
-          // Extract colors and auto-select if exactly 1
-          const colorsArr = getColorsArray(data.colors);
-          console.log("Fetched colors array:", colorsArr); // Debug log
-
-          if (colorsArr.length === 1) {
-            const singleColor = colorsArr[0];
-            setProd1({ taille1: "", color1: singleColor });
-            setProd2({ taille2: "", color2: singleColor });
-            setProd3({ taille3: "", color3: singleColor });
-          }
-
-          setFormData((prev) => ({ 
-            ...prev, 
-            prix: data.price || 0, 
-            prix_total: data.price || 0 
-          }));
+          setProduit(docSnap.data());
         } else {
           console.log("No such document!");
         }
@@ -210,26 +171,25 @@ function DetaillsProduct({ cart, setCart }) {
     fetchReviews();
   }, [id]);
 
-  // Handle offer changes while preserving single color auto-selection
+  // Auto-select single color & update price based on offer
   useEffect(() => {
-    const colorsArr = getColorsArray(produit?.colors);
-    const singleColor = colorsArr.length === 1 ? colorsArr[0] : "";
+    const singleColor = produit?.colors && Array.isArray(produit.colors) && produit.colors.length === 1 
+      ? produit.colors[0] 
+      : "";
 
     if (formData.offer == 1) {
-      setFormData((prev) => ({ ...prev, prix: produit?.price || 0 }));
-      if (singleColor) {
-        setProd1((prev) => ({ ...prev, color1: singleColor }));
-      }
+      setProd2({ taille2: "", color2: singleColor });
+      setFormData((prev) => ({ ...prev, prix: produit.price }));
+      setProd3({ taille3: "", color3: singleColor });
     } else if (formData.offer == 2) {
-      setFormData((prev) => ({ ...prev, prix: produit?.offer2 || 0 }));
+      setProd3({ taille3: "", color3: singleColor });
+      setFormData((prev) => ({ ...prev, prix: produit.offer2 }));
       if (singleColor) {
-        setProd1((prev) => ({ ...prev, color1: singleColor }));
         setProd2((prev) => ({ ...prev, color2: singleColor }));
       }
     } else {
-      setFormData((prev) => ({ ...prev, prix: produit?.offer3 || 0 }));
+      setFormData((prev) => ({ ...prev, prix: produit.offer3 }));
       if (singleColor) {
-        setProd1((prev) => ({ ...prev, color1: singleColor }));
         setProd2((prev) => ({ ...prev, color2: singleColor }));
         setProd3((prev) => ({ ...prev, color3: singleColor }));
       }
@@ -237,10 +197,27 @@ function DetaillsProduct({ cart, setCart }) {
   }, [formData.offer, produit]);
 
   useEffect(() => {
+    const singleColor = produit?.colors && Array.isArray(produit.colors) && produit.colors.length === 1 
+      ? produit.colors[0] 
+      : "";
+
+    setFormData((prev) => ({ 
+      ...prev, 
+      prix: produit.price || 0, 
+      prix_total: produit.price || 0 
+    }));
+
+    if (singleColor) {
+      setProd1((prev) => ({ ...prev, color1: singleColor }));
+      setProd2((prev) => ({ ...prev, color2: singleColor }));
+      setProd3((prev) => ({ ...prev, color3: singleColor }));
+    }
+  }, [produit]);
+
+  useEffect(() => {
     setFormData((prev) => ({ ...prev, prix_total: parseInt(prev.prix || 0) + parseInt(prev.montant_livraison || 0) }));
   }, [formData.prix, formData.montant_livraison]);
 
-  // Fetch product images from Supabase
   useEffect(() => {
     const fetchImages = async () => {
       try {
@@ -449,7 +426,7 @@ function DetaillsProduct({ cart, setCart }) {
         prix: produit?.price,
         type_livraison: 'domicile',
         montant_livraison: 0,
-        prix_total: 0, 
+        prix_total: 0,
       });
       setProd1({ taille1: "", color1: "" });
       setProd2({ taille2: "", color2: "" });
