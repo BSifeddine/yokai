@@ -1,229 +1,253 @@
-import { deleteObject, getDownloadURL, listAll, ref, uploadBytesResumable } from 'firebase/storage';
-import React, { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { firestore, storage } from '../firebase';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { firestore } from '../firebase';
+import { supabase } from '../supabaseClient'; // Adjust path if your supabaseClient is elsewhere
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { motion } from "framer-motion";
 import { Check, PlusCircle, Trash, Upload } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const BUCKET_NAME = 'products';
+
 function ProductEdit() {
+  const location = useLocation();
+  const { id } = location.state || {};
 
-    const location = useLocation();
-    const { id } = location.state || {}; 
+  const nav = useNavigate();
 
-    const nav = useNavigate()
+  const [newProduct, setNewProduct] = useState([]);
 
-    const [newProduct, setNewProduct] = useState([])
+  const [files, setFiles] = useState([]);
+  const [progress, setProgress] = useState(0);
+  const [downloadURLs, setDownloadURLs] = useState([]);
 
-    const [files, setFiles] = useState([]);
-	const [progress, setProgress] = useState(0);
-	const [downloadURLs, setDownloadURLs] = useState([]);
+  const [imageURLs, setImageURLs] = useState([]);
 
-    const [imageURLs, setImageURLs] = useState([]);
+  const [selectedColors, setSelectedColors] = useState([]);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [selectedTailles, setSelectedTailles] = useState([]);
+  const [images, setImages] = useState([]);
 
-    const [selectedColors, setSelectedColors] = useState([]);
-    const [selectedImage, setSelectedImage] = useState("");
-	const [selectedTailles, setSelectedTailles] = useState([]);
-    const [images, setImages] = useState([]);
+  const offers = ['عرض خاص', 'تخفيض'];
 
-	const offers = ['عرض خاص', 'تخفيض']
-	
-	const colors = [
-	  { name: 'black', hex: "bg-black"},
-	  { name: 'white', hex: 'bg-white'},
-	  { name: 'grey', hex: 'bg-gray-400'},
-	  { name: 'red', hex: 'bg-red-600' },
-	  { name: 'green', hex: 'bg-green-700' },
-	  { name: 'blue', hex: 'bg-blue-600' },
-	  { name: 'rose', hex: 'bg-rose-950'},
-	  { name: 'yellow', hex: 'bg-yellow-500' },
-	  { name: 'bleu_nuit', hex: 'bg-blue-950' },
-	  { name: 'beige', hex: 'bg-yellow-100' },
-	  { name: 'cyan', hex: 'bg-cyan-300' },
-	  { name: 'gray', hex: 'bg-gray-800' },
-	  { name: 'blackwhite', hex: 'bg-black border-4 border-white' },
-	  { name: 'greenwhite', hex: 'bg-green-600 border-4 border-white' },
-	  { name: 'whitegreen', hex: 'bg-white border-4 border-green-600' },
-	  { name: 'blackgrenat', hex: 'bg-black border-4 border-rose-950' },
-	  { name: 'beigegrenat', hex: 'bg-yellow-100 border-4 border-rose-950' },
-	];
+  const colors = [
+    { name: 'black', hex: "bg-black" },
+    { name: 'white', hex: 'bg-white' },
+    { name: 'grey', hex: 'bg-gray-400' },
+    { name: 'red', hex: 'bg-red-600' },
+    { name: 'green', hex: 'bg-green-700' },
+    { name: 'blue', hex: 'bg-blue-600' },
+    { name: 'rose', hex: 'bg-rose-950' },
+    { name: 'yellow', hex: 'bg-yellow-500' },
+    { name: 'bleu_nuit', hex: 'bg-blue-950' },
+    { name: 'beige', hex: 'bg-yellow-100' },
+    { name: 'cyan', hex: 'bg-cyan-300' },
+    { name: 'gray', hex: 'bg-gray-800' },
+    { name: 'blackwhite', hex: 'bg-black border-4 border-white' },
+    { name: 'greenwhite', hex: 'bg-green-600 border-4 border-white' },
+    { name: 'whitegreen', hex: 'bg-white border-4 border-green-600' },
+    { name: 'blackgrenat', hex: 'bg-black border-4 border-rose-950' },
+    { name: 'beigegrenat', hex: 'bg-yellow-100 border-4 border-rose-950' },
+  ];
 
-    const tailles = ["S", "M", "L", "XL", "XXL", "XXXL"]
+  const tailles = ["S", "M", "L", "XL", "XXL", "XXXL"];
 
-    const handleCheckboxChange = (color) => {
-		setSelectedColors((prev) =>
-		  prev.includes(color)
-			? prev.filter((c) => c !== color) // Remove if already in the array
-			: [...prev, color] // Add to array
-		);
-	  };
-	
-    const handleTaillesChange = (taille) => {
-		setSelectedTailles((prev) =>
-		  prev.includes(taille)
-			? prev.filter((t) => t !== taille) // Remove if already in the array
-			: [...prev, taille] // Add to array
-		);
-	  };
+  const handleCheckboxChange = (color) => {
+    setSelectedColors((prev) =>
+      prev.includes(color)
+        ? prev.filter((c) => c !== color)
+        : [...prev, color]
+    );
+  };
 
-      const handleFileChange = (e) => {
-		setFiles(e.target.files);
-	  };
-	
-    useEffect(() => {
-        const fetchDocument = async () => {
-          try {
-            // Reference the specific document by its ID
-            const docRef = doc(firestore, 'produits', id); // Replace 'users' with your collection name
-            const docSnap = await getDoc(docRef);
-    
-            if (docSnap.exists()) {
-              // Document exists, retrieve the data
-              setNewProduct(docSnap.data());
-            } else {
-              // Document does not exist
-              console.log("No such document!");
-            }
-          } catch (error) {
-            console.error("Error fetching document:", error);
-          }
-        };
-    
-      if(id){
-        fetchDocument();
-      }
-      }, [id]);
+  const handleTaillesChange = (taille) => {
+    setSelectedTailles((prev) =>
+      prev.includes(taille)
+        ? prev.filter((t) => t !== taille)
+        : [...prev, taille]
+    );
+  };
 
-      useEffect(() => {
+  const handleFileChange = (e) => {
+    setFiles(e.target.files);
+  };
 
-        const fetchImages = async () => {
-          try {
-            // Create a reference to the folder containing the images (e.g., 'images/')
-            const storageRef = ref(storage, `${newProduct.name}/`);
-            
-            // List all items (files) in the 'images/' folder
-            const res = await listAll(storageRef);
-            
-            // Fetch download URLs for all items
-            const urls = await Promise.all(
-            res.items.map((itemRef) => getDownloadURL(itemRef))
-            );
-            
-            // Store the URLs in state
-            setImages(urls);
-          } catch (error) {
-            console.error("Error fetching images:", error);
-          }
-          };
-          
-          fetchImages();
-    },[newProduct])
+  useEffect(() => {
+    const fetchDocument = async () => {
+      try {
+        const docRef = doc(firestore, 'produits', id);
+        const docSnap = await getDoc(docRef);
 
-
-		useEffect(() => {
-			window.scrollTo(0, 0);
-		  }, []); 
-
-        const handleUpdate = async () => {
-
-
-		if(selectedColors.length == 0 || selectedTailles.length == 0){
-			alert("Remplez les tailles et les couleurs")
-		} else {
-            	
-		const promises = [];
-		Array.from(files).forEach((file) => {
-		  if (file.size === 0) {
-			alert('One or more files are empty.');
-			return;
-		  }
-	
-		  const storageRef = ref(storage, `${newProduct.name}/${file.name}`);
-		  const metadata = {
-			contentType: file.type, // Ensure the correct MIME type is set
-		  };
-	
-		  const uploadTask = uploadBytesResumable(storageRef, file, metadata);
-	
-		  promises.push(
-			new Promise((resolve, reject) => {
-			  uploadTask.on(
-				'state_changed',
-				(snapshot) => {
-				  const progress = Math.round(
-					(snapshot.bytesTransferred / snapshot.totalBytes) * 100
-				  );
-				  setProgress(progress);
-				},
-				(error) => {
-				  console.error("Upload failed:", error);
-				  reject(error);
-				},
-				() => {
-				  getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-					setDownloadURLs((prevURLs) => [...prevURLs, downloadURL]);
-					resolve(downloadURL);
-				  });
-				}
-			  );
-			})
-		  );
-		});
-	
-		Promise.all(promises)
-		  .then(() => toast.success('Le produit a été modifié'))
-		  .catch((err) => console.log(err));
-	  
-
-            const docRef = doc(firestore, 'produits', id); // Update this path with your collection and document ID
-        
-            try {
-              // Update the 'name' field in the document
-              await updateDoc(docRef, {
-                name: newProduct.name,
-				description: newProduct.description,
-				price: newProduct.price,
-				promotion: newProduct.promotion,
-				offer2: newProduct.offer2,
-				offer3: newProduct.offer3,
-				s_poids: newProduct.s_poids,
-				m_poids: newProduct.m_poids,
-				l_poids: newProduct.l_poids,
-				xl_poids: newProduct.xl_poids,
-				xxl_poids: newProduct.xxl_poids,
-				xxxl_poids: newProduct.xxxl_poids,
-				s_tol: newProduct.s_tol,
-				m_tol: newProduct.m_tol,
-				l_tol: newProduct.l_tol,
-				xl_tol: newProduct.xl_tol,
-				xxl_tol: newProduct.xxl_tol,
-				xxxl_tol: newProduct.xxxl_tol,
-				tailles: selectedTailles,
-				colors: selectedColors,
-				rating: newProduct.rating,
-				note: newProduct.note,
-				prix_promo: newProduct.prix_promo,
-              });
-              nav('/dashboard/produits')
-            } catch (error) {
-              console.error('Error updating document: ', error);
-            }
-			}
-          };
-
-        const deleteImage = async (imageUrl) => {
-            const imageRef = ref(storage, imageUrl);
-
-            try {
-              // Delete the file from Firebase Storage
-              await deleteObject(imageRef);
-              toast.danger("L'image a été supprimer")
-            } catch (error) {
-              setMessage(`Failed to delete image: ${error.message}`);
-            }
+        if (docSnap.exists()) {
+          setNewProduct(docSnap.data());
+        } else {
+          console.log("No such document!");
         }
+      } catch (error) {
+        console.error("Error fetching document:", error);
+      }
+    };
+
+    if (id) {
+      fetchDocument();
+    }
+  }, [id]);
+
+  // Fetch existing images from the product's folder in Supabase Storage
+  useEffect(() => {
+    const fetchImages = async () => {
+      if (!newProduct?.name) return;
+
+      try {
+        const folderPath = `${newProduct.name}`;
+        const { data, error } = await supabase.storage
+          .from(BUCKET_NAME)
+          .list(folderPath);
+
+        if (error) {
+          console.error("Error fetching images:", error);
+          return;
+        }
+
+        const validFiles = (data || []).filter(
+          (file) => file.name && file.name !== '.emptyFolderPlaceholder'
+        );
+
+        const urls = validFiles.map((file) => {
+          const filePath = `${folderPath}/${file.name}`;
+          const { data: publicUrlData } = supabase.storage
+            .from(BUCKET_NAME)
+            .getPublicUrl(filePath);
+          return publicUrlData.publicUrl;
+        });
+
+        setImages(urls);
+      } catch (error) {
+        console.error("Error fetching images:", error);
+      }
+    };
+
+    fetchImages();
+  }, [newProduct?.name]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const handleUpdate = async () => {
+    if (selectedColors.length == 0 || selectedTailles.length == 0) {
+      alert("Remplez les tailles et les couleurs");
+      return;
+    }
+
+    const fileArray = Array.from(files || []);
+    let completedCount = 0;
+    setProgress(0);
+
+    const promises = fileArray.map(async (file) => {
+      if (file.size === 0) {
+        alert('One or more files are empty.');
+        return null;
+      }
+
+      const filePath = `${newProduct.name}/${file.name}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, file, {
+          contentType: file.type,
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error("Upload failed:", uploadError);
+        throw uploadError;
+      }
+
+      completedCount += 1;
+      setProgress(Math.round((completedCount / fileArray.length) * 100));
+
+      const { data: publicUrlData } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(filePath);
+
+      const publicUrl = publicUrlData.publicUrl;
+      setDownloadURLs((prevURLs) => [...prevURLs, publicUrl]);
+      return publicUrl;
+    });
+
+    try {
+      await Promise.all(promises);
+      if (fileArray.length > 0) {
+        toast.success('Le produit a été modifié');
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error("Erreur lors du téléchargement des images");
+      return;
+    }
+
+    const docRef = doc(firestore, 'produits', id);
+
+    try {
+      await updateDoc(docRef, {
+        name: newProduct.name,
+        description: newProduct.description,
+        price: newProduct.price,
+        promotion: newProduct.promotion,
+        offer2: newProduct.offer2,
+        offer3: newProduct.offer3,
+        s_poids: newProduct.s_poids,
+        m_poids: newProduct.m_poids,
+        l_poids: newProduct.l_poids,
+        xl_poids: newProduct.xl_poids,
+        xxl_poids: newProduct.xxl_poids,
+        xxxl_poids: newProduct.xxxl_poids,
+        s_tol: newProduct.s_tol,
+        m_tol: newProduct.m_tol,
+        l_tol: newProduct.l_tol,
+        xl_tol: newProduct.xl_tol,
+        xxl_tol: newProduct.xxl_tol,
+        xxxl_tol: newProduct.xxxl_tol,
+        tailles: selectedTailles,
+        colors: selectedColors,
+        rating: newProduct.rating,
+        note: newProduct.note,
+        prix_promo: newProduct.prix_promo,
+      });
+      nav('/dashboard/produits');
+    } catch (error) {
+      console.error('Error updating document: ', error);
+    }
+  };
+
+  const deleteImage = async (imageUrl) => {
+    try {
+      // Extract the path inside the bucket from the public URL
+      const marker = `/object/public/${BUCKET_NAME}/`;
+      const markerIndex = imageUrl.indexOf(marker);
+
+      const filePath =
+        markerIndex !== -1
+          ? decodeURIComponent(imageUrl.slice(markerIndex + marker.length).split('?')[0])
+          : `${newProduct.name}/${decodeURIComponent(imageUrl.split('/').pop().split('?')[0])}`;
+
+      const { error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .remove([filePath]);
+
+      if (error) {
+        throw error;
+      }
+
+      setImages((prev) => prev.filter((url) => url !== imageUrl));
+      toast.error("L'image a été supprimer");
+    } catch (error) {
+      console.error("Failed to delete image:", error);
+      toast.error(`Failed to delete image: ${error.message}`);
+    }
+  };
 
     return (
 		<div
