@@ -242,7 +242,7 @@ function ProductEdit() {
       }
 
       setImages((prev) => prev.filter((url) => url !== imageUrl));
-      toast.error("L'image a été supprimer");
+      toast.error("L'image a été supprimer"); 
     } catch (error) {
       console.error("Failed to delete image:", error);
       toast.error(`Failed to delete image: ${error.message}`);
