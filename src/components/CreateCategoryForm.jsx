@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { PlusCircle, Upload, Loader } from "lucide-react";
 import { firestore } from "../firebase";
-import { addDoc, collection, Timestamp, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, Timestamp, serverTimestamp} from "firebase/firestore";
 import { ToastContainer, toast } from 'react-toastify';
 import { supabase } from '../../supabaseClient';
+import imageCompression from "browser-image-compression";
 
 const CreateCategoryForm = () => {
     const [imageUpload, setImageUpload] = useState(null);
@@ -12,57 +13,75 @@ const CreateCategoryForm = () => {
     const [description, setDesciption] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
-        if (e) e.preventDefault();
-        setLoading(true);
 
-        try {
-            console.log("1. Starting upload process...");
-            let imageUrl = "";
+const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setLoading(true);
 
-            if (imageUpload) {
-                // Ensure filename has no invalid characters or leading slashes
-                const cleanFileName = `${Date.now()}_${imageUpload.name.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
+    try {
+        console.log("1. Starting upload process...");
+        let imageUrl = "";
 
-                console.log("2. Uploading to Supabase bucket...");
-                const { error: uploadError } = await supabase.storage
-                    .from('categories')
-                    .upload(cleanFileName, imageUpload);
+        if (imageUpload && imageUpload.size > 0) {
+            const compressionOptions = {
+                maxSizeMB: 0.2,          // Target ~200 KB max
+                maxWidthOrHeight: 1000,  // Resize longest side to 1000px max for category cards
+                useWebWorker: true,      // Run compression off the main UI thread
+                fileType: "image/webp",  // Convert to WebP for minimal egress
+                initialQuality: 0.8,
+            };
 
-                if (uploadError) {
-                    console.error("❌ Supabase Upload Error:", uploadError);
-                    throw uploadError;
-                }
+            console.log("1b. Compressing image in browser...");
+            const compressedFile = await imageCompression(imageUpload, compressionOptions);
 
-                console.log("3. Getting public URL...");
-                const { data: publicUrlData } = supabase.storage
-                    .from('categories')
-                    .getPublicUrl(cleanFileName);
+            // Immutable filename: unique timestamp + random suffix + sanitized base name
+            const baseName = imageUpload.name
+                .replace(/\.[^/.]+$/, "")
+                .replace(/[^a-zA-Z0-9_-]/g, "_");
+            const uniqueSuffix = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            const immutableFileName = `${uniqueSuffix}_${baseName}.webp`;
 
-                imageUrl = publicUrlData.publicUrl;
+            console.log("2. Uploading to Supabase bucket...");
+            const { error: uploadError } = await supabase.storage
+                .from('categories')
+                .upload(immutableFileName, compressedFile, {
+                    contentType: compressedFile.type || "image/webp",
+                    cacheControl: "31536000", // 1 year (31,536,000 seconds) for immutable files
+                    upsert: false,
+                });
+
+            if (uploadError) {
+                console.error("❌ Supabase Upload Error:", uploadError);
+                throw uploadError;
             }
 
-            console.log("4. Saving to Firestore...");
-            await addDoc(collection(firestore, "categories"), {
-                name: name.trim(),
-                description: description.trim(),
-                image: imageUrl,
-                timestamp: serverTimestamp ? serverTimestamp() : new Date(), 
-            });
+            console.log("3. Getting public URL...");
+            const { data: publicUrlData } = supabase.storage
+                .from('categories')
+                .getPublicUrl(immutableFileName);
 
-            toast.success("La catégorie a été ajoutée avec succès !");
-            setName("");
-            setDesciption("");
-            setImageUpload(null);
+            imageUrl = publicUrlData?.publicUrl || "";
         }
-        catch (error) {
-            console.error("🔥 Error caught: ", error);
-            toast.error("Erreur: " + error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
 
+        console.log("4. Saving to Firestore...");
+        await addDoc(collection(firestore, "categories"), {
+            name: name.trim(),
+            description: description.trim(),
+            image: imageUrl,
+            timestamp: serverTimestamp ? serverTimestamp() : new Date(),
+        });
+
+        toast.success("La catégorie a été ajoutée avec succès !");
+        setName("");
+        setDesciption("");
+        setImageUpload(null);
+    } catch (error) {
+        console.error("🔥 Error caught: ", error);
+        toast.error("Erreur: " + error.message);
+    } finally {
+        setLoading(false);
+    }
+};
     useEffect(() => {
         document.title = "Admin | Catégorie";
         window.scrollTo(0, 0);

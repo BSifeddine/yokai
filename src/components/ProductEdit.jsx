@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { firestore } from '../firebase';
 import { supabase } from '../supabaseClient'; // Adjust path if your supabaseClient is elsewhere
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { motion } from "framer-motion";
 import { Check, PlusCircle, Trash, Upload } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import imageCompression from "browser-image-compression";
 
 const BUCKET_NAME = 'products';
 
@@ -135,92 +136,123 @@ function ProductEdit() {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleUpdate = async () => {
-    if (selectedColors.length == 0 || selectedTailles.length == 0) {
-      alert("Remplez les tailles et les couleurs");
-      return;
-    }
+const handleUpdate = async () => {
+  if (selectedColors.length == 0 || selectedTailles.length == 0) {
+    alert("Remplez les tailles et les couleurs");
+    return;
+  }
 
-    const fileArray = Array.from(files || []);
-    let completedCount = 0;
-    setProgress(0);
+  const fileArray = Array.from(files || []);
+  let completedCount = 0;
+  setProgress(0);
 
-    const promises = fileArray.map(async (file) => {
-      if (file.size === 0) {
-        alert('One or more files are empty.');
-        return null;
-      }
-
-      const filePath = `${newProduct.name}/${file.name}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .upload(filePath, file, {
-          contentType: file.type,
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error("Upload failed:", uploadError);
-        throw uploadError;
-      }
-
-      completedCount += 1;
-      setProgress(Math.round((completedCount / fileArray.length) * 100));
-
-      const { data: publicUrlData } = supabase.storage
-        .from(BUCKET_NAME)
-        .getPublicUrl(filePath);
-
-      const publicUrl = publicUrlData.publicUrl;
-      setDownloadURLs((prevURLs) => [...prevURLs, publicUrl]);
-      return publicUrl;
-    });
-
-    try {
-      await Promise.all(promises);
-      if (fileArray.length > 0) {
-        toast.success('Le produit a été modifié');
-      }
-    } catch (err) {
-      console.log(err);
-      toast.error("Erreur lors du téléchargement des images");
-      return;
-    }
-
-    const docRef = doc(firestore, 'produits', id);
-
-    try {
-      await updateDoc(docRef, {
-        name: newProduct.name,
-        description: newProduct.description,
-        price: newProduct.price,
-        promotion: newProduct.promotion,
-        offer2: newProduct.offer2,
-        offer3: newProduct.offer3,
-        s_poids: newProduct.s_poids,
-        m_poids: newProduct.m_poids,
-        l_poids: newProduct.l_poids,
-        xl_poids: newProduct.xl_poids,
-        xxl_poids: newProduct.xxl_poids,
-        xxxl_poids: newProduct.xxxl_poids,
-        s_tol: newProduct.s_tol,
-        m_tol: newProduct.m_tol,
-        l_tol: newProduct.l_tol,
-        xl_tol: newProduct.xl_tol,
-        xxl_tol: newProduct.xxl_tol,
-        xxxl_tol: newProduct.xxxl_tol,
-        tailles: selectedTailles,
-        colors: selectedColors,
-        rating: newProduct.rating,
-        note: newProduct.note,
-        prix_promo: newProduct.prix_promo,
-      });
-      nav('/dashboard/produits');
-    } catch (error) {
-      console.error('Error updating document: ', error);
-    }
+  const compressionOptions = {
+    maxSizeMB: 0.2,          // Target ~200 KB max per image
+    maxWidthOrHeight: 1200,  // Resize longest side to 1200px max
+    useWebWorker: true,      // Run compression off the main UI thread
+    fileType: "image/webp",  // Convert to WebP for much smaller egress
+    initialQuality: 0.8,
   };
+
+  const promises = fileArray.map(async (file) => {
+    if (!file || file.size === 0) {
+      alert("One or more files are empty.");
+      return null;
+    }
+
+    // Compress & resize in browser before uploading
+    const compressedFile = await imageCompression(file, compressionOptions);
+
+    // Immutable path: unique timestamp + random ID so cached URLs never go stale
+    const cleanProductFolder = (newProduct.name || "product")
+      .trim()
+      .replace(/[^a-zA-Z0-9_-]/g, "_");
+    const baseName = file.name
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "_");
+    const uniqueSuffix = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const filePath = `${cleanProductFolder}/${uniqueSuffix}_${baseName}.webp`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET_NAME)
+      .upload(filePath, compressedFile, {
+        contentType: compressedFile.type || "image/webp",
+        cacheControl: "31536000", // 1 year (31,536,000 seconds) for immutable files
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("Upload failed:", uploadError);
+      throw uploadError;
+    }
+
+    completedCount += 1;
+    setProgress(Math.round((completedCount / fileArray.length) * 100));
+
+    const { data: publicUrlData } = supabase.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(filePath);
+
+    const publicUrl = publicUrlData?.publicUrl || null;
+    if (publicUrl) {
+      setDownloadURLs((prevURLs) => [...prevURLs, publicUrl]);
+    }
+    return publicUrl;
+  });
+
+  let uploadedURLs = [];
+  try {
+    const results = await Promise.all(promises);
+    uploadedURLs = results.filter(Boolean);
+    if (fileArray.length > 0) {
+      toast.success("Le produit a été modifié");
+    }
+  } catch (err) {
+    console.log(err);
+    toast.error("Erreur lors du téléchargement des images");
+    return;
+  }
+
+  const docRef = doc(firestore, "produits", id);
+
+  try {
+    const updatePayload = {
+      name: newProduct.name,
+      description: newProduct.description,
+      price: newProduct.price,
+      promotion: newProduct.promotion,
+      offer2: newProduct.offer2,
+      offer3: newProduct.offer3,
+      s_poids: newProduct.s_poids,
+      m_poids: newProduct.m_poids,
+      l_poids: newProduct.l_poids,
+      xl_poids: newProduct.xl_poids,
+      xxl_poids: newProduct.xxl_poids,
+      xxxl_poids: newProduct.xxxl_poids,
+      s_tol: newProduct.s_tol,
+      m_tol: newProduct.m_tol,
+      l_tol: newProduct.l_tol,
+      xl_tol: newProduct.xl_tol,
+      xxl_tol: newProduct.xxl_tol,
+      xxxl_tol: newProduct.xxxl_tol,
+      tailles: selectedTailles,
+      colors: selectedColors,
+      rating: newProduct.rating,
+      note: newProduct.note,
+      prix_promo: newProduct.prix_promo,
+    };
+
+    // Optional: append newly uploaded image URLs to Firestore's `images` array
+    if (uploadedURLs.length > 0) {
+      updatePayload.images = arrayUnion(...uploadedURLs);
+    }
+
+    await updateDoc(docRef, updatePayload);
+    nav("/dashboard/produits");
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
+};
 
   const deleteImage = async (imageUrl) => {
     try {
