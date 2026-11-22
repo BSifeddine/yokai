@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { firestore } from '../firebase';
-import { supabase } from '../supabaseClient'; // Adjust path if your supabaseClient is elsewhere
+import { supabase } from '../../supabaseClient'; // Adjust path if your supabaseClient is elsewhere
 import { doc, getDoc, updateDoc, arrayUnion} from 'firebase/firestore';
 import { motion } from "framer-motion";
 import { Check, PlusCircle, Trash, Upload } from 'lucide-react';
