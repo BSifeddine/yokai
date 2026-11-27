@@ -491,8 +491,8 @@ function DetaillsProduct({ cart, setCart }) {
             </div>
         </div>
         <p className="text-yellow-500 text-2xl mb-4 ">
-        {"★".repeat(produit?.rating)}<span className="text-gray-300">{"★".repeat(5 - produit?.rating)}</span>{" "}
-        </p>
+				{"★".repeat(produit?.rating)}<span className="text-gray-300">{"★".repeat(5 - produit?.rating)}</span>{" "}
+				</p>
       </div>
       {/* Phone Images */}
       <div className="md:hidden flex w-full relative mb-1 flex-col overflow-hidden rounded-lg items-center">
@@ -816,7 +816,7 @@ function DetaillsProduct({ cart, setCart }) {
                      color == "beigegrenat" ? "border-4 border-rose-950 bg-yellow-100" :
                      color == "bleu_nuit" ? "bg-blue-950":
                      color == "gray" ? "bg-gray-700" :
-                     color == "cyan" ? "bg-cyan-300" :
+								     color == "cyan" ? "bg-cyan-300" :
                      color == "red" ? "bg-red-600"
                     : color == "beige" ? "bg-yellow-100" : "bg-" + color +"-500"} `}
                 >
@@ -888,7 +888,7 @@ function DetaillsProduct({ cart, setCart }) {
                     color == "rose" ? "bg-rose-950" :
                     color == "bleu_nuit" ? "bg-blue-950":
                     color == "gray" ? "bg-gray-700" :
-                    color == "cyan" ? "bg-cyan-300" :
+								    color == "cyan" ? "bg-cyan-300" :
                     color == "red" ? "bg-red-600"
                    : color == "beige" ? "bg-yellow-100" : "bg-" + color +"-500"} `}
                 >
@@ -960,7 +960,7 @@ function DetaillsProduct({ cart, setCart }) {
                     color == "rose" ? "bg-rose-950" :
                     color == "bleu_nuit" ? "bg-blue-950":
                     color == "gray" ? "bg-gray-700" :
-                    color == "cyan" ? "bg-cyan-300" :
+								    color == "cyan" ? "bg-cyan-300" :
                     color == "red" ? "bg-red-600"
                    : color == "beige" ? "bg-yellow-100" : "bg-" + color +"-500"} `}
                 >

@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
-import { firestore, storage } from "../firebase";
+import { firestore } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
-import { supabase } from '../../supabaseClient'
+import { supabase } from "../../supabaseClient";
+import imageCompression from "browser-image-compression";
 
 const AjouterProduit = () => {
   const [name, setName] = useState("");
@@ -22,26 +22,36 @@ const AjouterProduit = () => {
     }));
   };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       let imageUrl = "";
       if (image) {
-        // 1. Create a unique filename for Supabase
-        const fileName = `products/${Date.now()}-${image.name}`;
+        // Compress image in the browser before uploading
+        const compressionOptions = {
+          maxSizeMB: 0.8,          // Target max size in MB
+          maxWidthOrHeight: 1600,  // Resize large photos while keeping aspect ratio
+          useWebWorker: true,      // Offload work to a background thread
+        };
 
-        // 2. Upload file to your Supabase bucket (replace 'app-files' with your actual bucket name)
+        const compressedImage = await imageCompression(image, compressionOptions);
+
+        // Preserve original extension/name safely
+        const safeName = (compressedImage.name || image.name).replace(/\s+/g, "-");
+        const fileName = `products/${Date.now()}-${safeName}`;
+
         const { error: uploadError } = await supabase.storage
-          .from('products') 
-          .upload(fileName, image);
+          .from("products")
+          .upload(fileName, compressedImage, {
+            contentType: compressedImage.type || image.type,
+          });
 
         if (uploadError) throw uploadError;
 
-        // 3. Get the public URL from Supabase
         const { data: publicUrlData } = supabase.storage
-          .from('products')
+          .from("products")
           .getPublicUrl(fileName);
 
         imageUrl = publicUrlData.publicUrl;
@@ -52,7 +62,6 @@ const handleSubmit = async (e) => {
         normalizedSizes[k] = v === "" ? 0 : Number(v);
       });
 
-      // Still saves directly to your Firestore database as usual!
       await addDoc(collection(firestore, "vetements"), {
         name: name.trim(),
         type,
@@ -74,6 +83,7 @@ const handleSubmit = async (e) => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto">
