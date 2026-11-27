@@ -49,7 +49,7 @@ const CartPage = ({cart, setCart}) => {
     if (!hasLoaded) {
     return (
       <div className="w-full h-96 flex flex-col justify-center items-center gap-4 py-32">
-        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
         <h1 className="text-gray-700 font-bold text-xl sm:text-2xl">
           جاري التحميل
         </h1>
@@ -108,7 +108,7 @@ const EmptyCartUI = () => (
         <h3 className='text-2xl font-semibold '>سلتك فارغة</h3>
         <p className='text-gray-500'>يبدو أنك لم تضف اي منتجات الى السلة بعد</p>
         <Link
-            className='mt-4 font-bold rounded-md bg-orange-500 px-6 py-2 text-white transition-colors hover:bg-orange-600'
+            className='mt-4 font-bold rounded-md bg-red-500 px-6 py-2 text-white transition-colors hover:bg-red-600'
             to='/'
         >
             إبدأ التسوق

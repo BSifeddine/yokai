@@ -29,14 +29,14 @@ function Products() {
 	  }, []);
 
       useEffect(() => {
-		document.title = "Art Tshirt | Produits"
+		document.title = "YOKAI | Produits"
 		window.scrollTo(0, 0);
 	  }, []); 
 
   if (loading) {
     return (
       <div className="w-full h-96 flex flex-col justify-center items-center gap-4 py-32">
-        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
         <h1 className="text-gray-700 font-bold text-xl sm:text-2xl">
           جاري التحميل
         </h1>
