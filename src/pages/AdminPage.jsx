@@ -57,7 +57,7 @@ const AdminPage = () => {
       <div className='min-h-screen relative overflow-hidden mt-12'>
         <div className='relative z-10 container mx-auto px-4 pt-8 pb-8'>
           <h1
-            className='text-4xl font-bold mb-8 text-red-500 text-center'
+            className='text-4xl font-bold mb-8 text-orange-500 text-center'
           >
             Admin Dashboard
           </h1>
@@ -69,7 +69,7 @@ const AdminPage = () => {
                 to={tab.id == "stock" ? `/stock/produits` : `/dashboard/${tab.id}`}
                 className={`flex items-center px-4 py-2 mx-2 rounded-md transition-colors duration-200 ${
                   filter == tab.id
-                    ? "bg-red-600 text-white"
+                    ? "bg-orange-600 text-white"
                     : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 }`}
               >
@@ -86,7 +86,7 @@ const AdminPage = () => {
       to={tab.id == "stock" ? `/stock/produits` : `/dashboard/${tab.id}`}
       className={`flex items-center px-4 py-2 mr-2 rounded-md transition-colors duration-200 flex-shrink-0 ${
         filter == tab.id
-          ? "bg-red-600 text-white"
+          ? "bg-orange-600 text-white"
           : "bg-gray-700 text-gray-300 hover:bg-gray-600"
       }`}
     >

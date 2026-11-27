@@ -49,15 +49,15 @@ const CartItem = ({ item, index, deleteProduct }) => {
             </div>
             <div className='flex items-center justify-between md:order-3 md:justify-end'>
               <div className='flex flex-row gap-1'>
-                <p className='font-bold text-lg text-red-500'>دج</p>
-                <p className='font-bold text-lg text-red-500'>{item.price}</p>
+                <p className='font-bold text-lg text-orange-500'>دج</p>
+                <p className='font-bold text-lg text-orange-500'>{item.price}</p>
               </div>
             </div>
           </div>
           <div className='w-1/5 flex justify-end'>
             <button
               type="button"
-              className='inline-flex items-center text-sm font-medium text-red-400 hover:text-red-500'
+              className='inline-flex items-center text-sm font-medium text-orange-400 hover:text-orange-500'
               onClick={() => deleteProduct(index)}
             >
               <Trash />

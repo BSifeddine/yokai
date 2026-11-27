@@ -64,7 +64,7 @@ const ProduitCard = ({ product, isFeatured }) => {
       {product.note && (
         <div
           className={`absolute z-40 
-            ${product.note === "عرض خاص" ? "bg-red-500" : "bg-red-500"} 
+            ${product.note === "عرض خاص" ? "bg-red-500" : "bg-orange-500"} 
             text-xs md:text-base w-2/5 h-8 md:h-10 rounded-br-2xl 
             font-bold text-white flex justify-center items-center`}
         >
@@ -100,8 +100,8 @@ const ProduitCard = ({ product, isFeatured }) => {
             </div>
           )}
           <div className="flex items-center gap-1">
-            <p className="text-lg font-bold text-red-500">دج</p>
-            <p className="text-lg font-bold text-red-500">{product.price}</p>
+            <p className="text-lg font-bold text-orange-500">دج</p>
+            <p className="text-lg font-bold text-orange-500">{product.price}</p>
           </div>
         </div>
       </div>

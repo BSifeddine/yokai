@@ -7,11 +7,10 @@ import { firestore } from "../firebase";
 import { collection, doc, getDoc, getDocs, addDoc, query, where } from 'firebase/firestore';
 import ReviewItem from '../components/ReviewItem'; 
 import FeaturedProducts from '../components/FeaturedProducts'; 
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from "react-router-dom";
 
 function DetaillsProduct({ cart, setCart }) {
   const { id } = useParams();
@@ -448,11 +447,11 @@ function DetaillsProduct({ cart, setCart }) {
       setProd3({ taille3: "", color3: "" });
     }
   };
- 
+
   if (loading) {
     return (
       <div className="w-full h-96 flex flex-col justify-center items-center gap-4 py-32">
-        <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
         <h1 className="text-gray-700 font-bold text-xl sm:text-2xl">
           جاري التحميل
         </h1>
@@ -465,7 +464,7 @@ function DetaillsProduct({ cart, setCart }) {
     <div className="flex w-full md:w-1/2 lg:w-2/5 relative flex-col overflow-hidden rounded-lg  items-end">
       <div className= "lg:mr-2 flex flex-col items-end">
         {produit.note && <div className='flex flex-row items-center justify-end pr-2 w-full'>
-        <div className={`${produit.note == "عرض خاص" ? "bg-red-500 w-40" : "bg-red-500 w-28"} text-lg h-10 rounded-br-2xl rounded-tl-2xl font-bold text-white flex flex-row justify-center items-center`}>
+        <div className={`${produit.note == "عرض خاص" ? "bg-red-500 w-40" : "bg-orange-500 w-28"} text-lg h-10 rounded-br-2xl rounded-tl-2xl font-bold text-white flex flex-row justify-center items-center`}>
           <p className="mb-1">{produit.note}</p>
         </div>
         </div>}
@@ -477,7 +476,7 @@ function DetaillsProduct({ cart, setCart }) {
         <div className='flex items-center justify-center gap-3 md:mt-2'>
         {produit?.promotion > 0 &&
           <>
-            <div className="bg-red-500 px-3 py-1 rounded-full mb-1">
+            <div className="bg-orange-500 px-3 py-1 rounded-full mb-1">
                 <p className='text-center text-lg text-white font-bold'>-{produit.promotion}%</p>
             </div>
             <div className='flex mb-1'>
@@ -487,13 +486,13 @@ function DetaillsProduct({ cart, setCart }) {
           </>
         }
             <div className='flex'>
-                <h2 className="text-center text-xl sm:text-1xl md:text-2xl font-bold text-red-500 mb-1">دج</h2>
-                <h2 className="text-center text-xl sm:text-1xl md:text-2xl font-bold text-red-500 mb-1">{parseInt(produit?.price)}</h2>
+                <h2 className="text-center text-xl sm:text-1xl md:text-2xl font-bold text-orange-500 mb-1">دج</h2>
+                <h2 className="text-center text-xl sm:text-1xl md:text-2xl font-bold text-orange-500 mb-1">{parseInt(produit?.price)}</h2>
             </div>
         </div>
         <p className="text-yellow-500 text-2xl mb-4 ">
-				{"★".repeat(produit?.rating)}<span className="text-gray-300">{"★".repeat(5 - produit?.rating)}</span>{" "}
-				</p>
+        {"★".repeat(produit?.rating)}<span className="text-gray-300">{"★".repeat(5 - produit?.rating)}</span>{" "}
+        </p>
       </div>
       {/* Phone Images */}
       <div className="md:hidden flex w-full relative mb-1 flex-col overflow-hidden rounded-lg items-center">
@@ -504,7 +503,7 @@ function DetaillsProduct({ cart, setCart }) {
         </div>
         <div className='flex justify-center mt-3 gap-3 w-11/12'>
         {imageURLs?.map((url) => {
-          return <img onClick={() => setSelectedImage(url)} className={`rounded-lg cursor-pointer ${url === selectedImage ? "w-12 h-11 border-2 border-red-500" : "w-11 h-10 "}`} src={url} alt="" />
+          return <img onClick={() => setSelectedImage(url)} className={`rounded-lg cursor-pointer ${url === selectedImage ? "w-12 h-11 border-2 border-orange-500" : "w-11 h-10 "}`} src={url} alt="" />
         })}
         </div>
       </div> 
@@ -596,12 +595,12 @@ function DetaillsProduct({ cart, setCart }) {
             <div className='flex flex-col w-full'>
       <div className='flex justify-between mb-2 items-center'>
         {formData.wilaya? 
-          <div className='flex gap-1 items-center justify-center bg-red-500 rounded-lg px-3 h-8'>
+          <div className='flex gap-1 items-center justify-center bg-orange-500 rounded-lg px-3 h-8'>
             <p className='text-white font-bold'>دج</p>
             <p className='text-white font-bold'>{formData.montant_livraison}</p>
           </div>
         :
-          <div className='flex gap-1 items-center justify-center bg-red-500 rounded-lg px-3 h-8'>
+          <div className='flex gap-1 items-center justify-center bg-orange-500 rounded-lg px-3 h-8'>
             <p className='text-white font-bold'>اختر الولاية</p>
           </div>
         }
@@ -613,7 +612,7 @@ function DetaillsProduct({ cart, setCart }) {
       {/* sd */}
       <div className="mb-2 flex flex-col items-end w-full">
         <button type='button' onClick={() => setFormData({...formData, type_livraison: "sd", montant_livraison: sd})}
-          className={`${formData.type_livraison === "sd" && formData.wilaya ? "border-2 border-red-500": "border-gray-300"} block w-full cursor-pointer ${sd != 0 && formData.wilaya && formData.type_livraison != "sd" && "hover:border-gray-400"} text-right px-4 py-2 border bg-white rounded-md shadow-sm focus:outline-none text-red-500`}
+          className={`${formData.type_livraison === "sd" && formData.wilaya ? "border-2 border-orange-500": "border-gray-300"} block w-full cursor-pointer ${sd != 0 && formData.wilaya && formData.type_livraison != "sd" && "hover:border-gray-400"} text-right px-4 py-2 border bg-white rounded-md shadow-sm focus:outline-none text-orange-500`}
           disabled = {!formData.wilaya || sd == 0 ? true : false}
         >
         {formData.wilaya ? 
@@ -647,7 +646,7 @@ function DetaillsProduct({ cart, setCart }) {
       {/* domicile */}
       <div className="mb-2 flex flex-col items-end w-full">
         <button type='button' onClick={() => setFormData({...formData, type_livraison: "domicile", montant_livraison: domicile})}
-          className={`${formData.type_livraison === "domicile" && formData.wilaya ? "border-2 border-red-500": "border-gray-300"} block w-full cursor-pointer ${formData.wilaya && formData.type_livraison != "domicile" && "hover:border-gray-400"} text-right px-4 py-2 border bg-white rounded-md shadow-sm focus:outline-none text-red-500`}
+          className={`${formData.type_livraison === "domicile" && formData.wilaya ? "border-2 border-orange-500": "border-gray-300"} block w-full cursor-pointer ${formData.wilaya && formData.type_livraison != "domicile" && "hover:border-gray-400"} text-right px-4 py-2 border bg-white rounded-md shadow-sm focus:outline-none text-orange-500`}
           disabled = {!formData.wilaya ? true : false}
         >
           <div className='flex justify-between'>
@@ -695,7 +694,7 @@ function DetaillsProduct({ cart, setCart }) {
                     <span className='text-gray-800'> قطعة واحدة   </span>
                   <span
                     className={`h-8 w-8 md:h-7 md:w-7 flex justify-center items-center transition-all rounded-full border-2 ${
-                      formData.offer == 1 ? 'shadow-lg bg-red-500 border-red-500' : 'border-gray-400'
+                      formData.offer == 1 ? 'shadow-lg bg-orange-500 border-orange-500' : 'border-gray-400'
                     }`}
                   >
                   {formData.offer == 1 && <Check color='white'/>}  
@@ -720,7 +719,7 @@ function DetaillsProduct({ cart, setCart }) {
                     <span className='text-gray-800'> قطعتين  </span>
                   <span
                     className={`h-8 w-8 md:h-7 md:w-7 flex justify-center items-center transition-all rounded-full border-2 ${
-                      formData.offer == 2 ? 'shadow-lg bg-red-500 border-red-500' : 'border-gray-400'
+                      formData.offer == 2 ? 'shadow-lg bg-orange-500 border-orange-500' : 'border-gray-400'
                     }`}
                   >
                   {formData.offer == 2 && <Check color='white'/>}  
@@ -746,7 +745,7 @@ function DetaillsProduct({ cart, setCart }) {
                     <span className='text-gray-800'> ثلاث قطع  </span>
                   <span
                     className={`h-8 w-8 md:h-7 md:w-7 flex justify-center items-center transition-all rounded-full border-2 ${
-                      formData.offer == 3 ? 'shadow-lg bg-red-500 border-red-500' : 'border-gray-400'
+                      formData.offer == 3 ? 'shadow-lg bg-orange-500 border-orange-500' : 'border-gray-400'
                     }`}
                   >
                   {formData.offer == 3 && <Check color='white'/>}  
@@ -779,7 +778,7 @@ function DetaillsProduct({ cart, setCart }) {
                 />
                 <span
                   className={`h-6 w-10 md:h-7 md:w-11 md:text-md text-xs rounded-md border-2 flex justify-center items-center font-bold ${
-                    prod1.taille1 === taille ? 'text-white bg-red-500 shadow-lg border-red-500' : 'border-gray-400'
+                    prod1.taille1 === taille ? 'text-white bg-orange-500 shadow-lg border-orange-500' : 'border-gray-400'
                   }`} 
                 >{taille}</span>
               </label>
@@ -817,7 +816,7 @@ function DetaillsProduct({ cart, setCart }) {
                      color == "beigegrenat" ? "border-4 border-rose-950 bg-yellow-100" :
                      color == "bleu_nuit" ? "bg-blue-950":
                      color == "gray" ? "bg-gray-700" :
-								     color == "cyan" ? "bg-cyan-300" :
+                     color == "cyan" ? "bg-cyan-300" :
                      color == "red" ? "bg-red-600"
                     : color == "beige" ? "bg-yellow-100" : "bg-" + color +"-500"} `}
                 >
@@ -856,7 +855,7 @@ function DetaillsProduct({ cart, setCart }) {
                 />
                 <span
                   className={`h-6 w-10 md:h-7 md:w-11 rounded-md border-2 flex md:text-md text-xs justify-center items-center font-bold ${
-                    prod2.taille2 === taille ? 'text-white bg-red-500 shadow-lg border-red-500' : 'border-gray-400'
+                    prod2.taille2 === taille ? 'text-white bg-orange-500 shadow-lg border-orange-500' : 'border-gray-400'
                   }`} 
                 >{taille}</span>
               </label>
@@ -889,7 +888,7 @@ function DetaillsProduct({ cart, setCart }) {
                     color == "rose" ? "bg-rose-950" :
                     color == "bleu_nuit" ? "bg-blue-950":
                     color == "gray" ? "bg-gray-700" :
-								    color == "cyan" ? "bg-cyan-300" :
+                    color == "cyan" ? "bg-cyan-300" :
                     color == "red" ? "bg-red-600"
                    : color == "beige" ? "bg-yellow-100" : "bg-" + color +"-500"} `}
                 >
@@ -928,7 +927,7 @@ function DetaillsProduct({ cart, setCart }) {
                 />
                 <span
                   className={`h-6 w-10 md:h-7 md:w-11 rounded-md border-2 text-xs md:text-md flex justify-center items-center font-bold ${
-                    prod3.taille3 === taille ? 'text-white bg-red-500 shadow-lg border-red-500' : 'border-gray-400'
+                    prod3.taille3 === taille ? 'text-white bg-orange-500 shadow-lg border-orange-500' : 'border-gray-400'
                   }`} 
                 >{taille}</span>
               </label>
@@ -961,7 +960,7 @@ function DetaillsProduct({ cart, setCart }) {
                     color == "rose" ? "bg-rose-950" :
                     color == "bleu_nuit" ? "bg-blue-950":
                     color == "gray" ? "bg-gray-700" :
-								    color == "cyan" ? "bg-cyan-300" :
+                    color == "cyan" ? "bg-cyan-300" :
                     color == "red" ? "bg-red-600"
                    : color == "beige" ? "bg-yellow-100" : "bg-" + color +"-500"} `}
                 >
@@ -1022,7 +1021,7 @@ function DetaillsProduct({ cart, setCart }) {
         {/* Submit Button */}
         <button
           type='submit'
-          className="w-full flex items-center gap-1 justify-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
+          className="w-full flex items-center gap-1 justify-center bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
         >
           <ShoppingBag className='inline-block mr-1' size={20}/>
           إشتري الآن
@@ -1129,7 +1128,7 @@ function DetaillsProduct({ cart, setCart }) {
         </div>
         <div className='flex justify-center mt-3 gap-3 w-11/12'>
         {imageURLs?.map((url) => {
-          return <img onClick={() => setSelectedImage(url)} className={`rounded-lg cursor-pointer ${url === selectedImage ? "w-12 h-11 border-2 border-red-500" : "w-11 h-10 "}`} src={url} alt="" />
+          return <img onClick={() => setSelectedImage(url)} className={`rounded-lg cursor-pointer ${url === selectedImage ? "w-12 h-11 border-2 border-orange-500" : "w-11 h-10 "}`} src={url} alt="" />
         })}
         </div>
         {produit.m_tol && produit.m_poids && produit.l_tol && produit.l_poids &&

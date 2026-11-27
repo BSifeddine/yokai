@@ -1,25 +1,48 @@
 import { Link } from "react-router-dom";
-import { supabase } from "../../supabaseClient";
+import { useEffect, useState } from "react";
+import { supabase } from "../../supabaseClient"; // Adjust path if needed
+
+const SUPABASE_BUCKET = "categories"; // Change to "products" if category images live in that bucket
 
 const CategoryItem = ({ category }) => {
-  // Compute the public URL directly without needing async/await or useEffect
-  const getCategoryImageUrl = () => {
-    if (!category?.image) return null;
-    
-    const filePath = `categories/${category.image}`;
+  const [imageUrl, setImageUrl] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    setImageUrl(null);
+
+    if (!category?.image) return;
+
+    if (
+      category.image.startsWith("http://") ||
+      category.image.startsWith("https://")
+    ) {
+      if (active) setImageUrl(category.image);
+      return;
+    }
+
+    // If category.image is e.g. "shirts.jpg" or "categories/shirts.jpg", normalize the path
+    const filePath = category.image.replace(/^categories\//, "");
+
     const { data } = supabase.storage
-      .from("products")
+      .from(SUPABASE_BUCKET)
       .getPublicUrl(filePath);
 
-    return data?.publicUrl || null;
-  };
+    if (active && data?.publicUrl) {
+      setImageUrl(data.publicUrl);
+    }
 
-  const imageUrl = getCategoryImageUrl();
+    return () => {
+      active = false;
+    };
+  }, [category?.image]);
+
+  if (!category) return null;
 
   return (
     <div className="relative overflow-hidden h-40 sm:h-96 sm:w-full rounded-lg group shadow-xl">
-      <Link to={"/categories/" + category.name}>
-        {imageUrl && category ? (
+      <Link to={`/categories/${encodeURIComponent(category.name)}`}>
+        {imageUrl ? (
           <div className="w-full h-full cursor-pointer relative">
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900 opacity-50 z-10" />
@@ -48,7 +71,7 @@ const CategoryItem = ({ category }) => {
             </div>
           </div>
         ) : (
-          <div className="w-full h-full bg-slate-300 animate-pulse"/>
+          <div className="w-full h-full bg-slate-300" />
         )}
       </Link>
     </div>

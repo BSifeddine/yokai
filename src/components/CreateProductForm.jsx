@@ -3,243 +3,228 @@ import { motion } from "framer-motion";
 import { PlusCircle, Upload, Loader, Check, Redo } from "lucide-react";
 import { firestore } from "../firebase";
 import { addDoc, collection, getDocs } from 'firebase/firestore';
-import { supabase } from '../../supabaseClient'; // <--- Import Supabase client
+import { supabase } from '../../supabaseClient';
+import imageCompression from "browser-image-compression";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import imageCompression from "browser-image-compression";
 
 const CreateProductForm = () => {
-    const [categories, setCategories] = useState([]);
-    const [files, setFiles] = useState([]);
-    const [loading, setLoading] = useState(false);
+	const [categories, setCategories] = useState([]);
+	const [files, setFiles] = useState([]);
+	const [loading, setLoading] = useState(false);
 
-    const [newProduct, setNewProduct] = useState({
-        name: "",
-        description: "",
-        price: 0,
-        promotion: 0,
-        offer2: 0,
-        offer3: 0,
-        rating: 0,
-        s_poids: "",
-        m_poids: "",
-        l_poids: "",
-        xl_poids: "",
-        xxl_poids: "",
-        xxxl_poids: "",
-        s_tol: "",
-        m_tol: "",
-        l_tol: "",
-        xl_tol: "",
-        xxl_tol: "",
-        xxxl_tol: "",
-        type: "",
-        category: "",
-        note: "",
-        prix_promo: 0,
-    });
+	const [newProduct, setNewProduct] = useState({
+		name: "",
+		description: "",
+		price: 0,
+		promotion: 0,
+		offer2: 0,
+		offer3: 0,
+		rating: 0,
+		s_poids: "",
+		m_poids: "",
+		l_poids: "",
+		xl_poids: "",
+		xxl_poids: "",
+		xxxl_poids: "",
+		s_tol: "",
+		m_tol: "",
+		l_tol: "",
+		xl_tol: "",
+		xxl_tol: "",
+		xxxl_tol: "",
+		type: "",
+		category: "",
+		note: "",
+		prix_promo: 0,
+	});
 
-    const [selectedColors, setSelectedColors] = useState([]);
-    const [selectedTailles, setSelectedTailles] = useState([]);
-    
-    const colors = [
-      { name: 'black', hex: "bg-black"},
-      { name: 'white', hex: 'bg-white'},
-      { name: 'grey', hex: 'bg-gray-400'},
-      { name: 'red', hex: 'bg-red-600' },
-      { name: 'green', hex: 'bg-green-700' },
-      { name: 'blue', hex: 'bg-blue-600' },
-      { name: 'rose', hex: 'bg-rose-950'},
-      { name: 'yellow', hex: 'bg-yellow-500' },
-      { name: 'bleu_nuit', hex: 'bg-blue-950' },
-      { name: 'beige', hex: 'bg-yellow-100' },
-      { name: 'cyan', hex: 'bg-cyan-300' },
-      { name: 'gray', hex: 'bg-gray-700' },
-    ];
-    const taillesV = ["S", "M", "L", "XL", "XXL", "XXXL"];
-    const taillesC = ["39", "40", "41", "42", "43", "44", "45"];
-    const types = ["Vêtements", "Chaussures"];
-    const offers = ['عرض خاص', 'تخفيض'];
+	const [selectedColors, setSelectedColors] = useState([]);
+	const [selectedTailles, setSelectedTailles] = useState([]);
 
-    const handleCheckboxChange = (color) => {
-        setSelectedColors((prev) =>
-          prev.includes(color)
-            ? prev.filter((c) => c !== color)
-            : [...prev, color]
-        );
-    };
-    
-    const handleTaillesChange = (taille) => {
-        setSelectedTailles((prev) =>
-          prev.includes(taille)
-            ? prev.filter((t) => t !== taille)
-            : [...prev, taille]
-        );
-    };
+	const colors = [
+	  { name: 'black', hex: "bg-black"},
+	  { name: 'white', hex: 'bg-white'},
+	  { name: 'grey', hex: 'bg-gray-400'},
+	  { name: 'red', hex: 'bg-red-600' },
+	  { name: 'green', hex: 'bg-green-700' },
+	  { name: 'blue', hex: 'bg-blue-600' },
+	  { name: 'rose', hex: 'bg-rose-950'},
+	  { name: 'yellow', hex: 'bg-yellow-500' },
+	  { name: 'bleu_nuit', hex: 'bg-blue-950' },
+	  { name: 'beige', hex: 'bg-yellow-100' },
+	  { name: 'cyan', hex: 'bg-cyan-300' },
+	  { name: 'gray', hex: 'bg-gray-700' },
+	];
+	const taillesV = ["S", "M", "L", "XL", "XXL", "XXXL"];
+	const taillesC = ["39", "40", "41", "42", "43", "44", "45"];
+	const types = ["Vêtements", "Chaussures"];
+	const offers = ['عرض خاص', 'تخفيض'];
 
-    useEffect(() => {
-        const fetchData = async () => {
-          try {
-            const querySnapshot = await getDocs(collection(firestore, "categories"));
-            const items = querySnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }));
-            setCategories(items);
-        } catch (error) {
-            console.error("Error fetching data: ", error);
-        }
-    };
-    
-        fetchData();
-    }, []);
-    
-    // Handle file selection
-    const handleFileChange = (e) => {
-        setFiles(e.target.files);
-    };
+	const handleCheckboxChange = (color) => {
+		setSelectedColors((prev) =>
+		  prev.includes(color)
+			? prev.filter((c) => c !== color)
+			: [...prev, color]
+		);
+	};
 
-// Upload files to Supabase Storage & save to Firestore
-const handleUpload = async (e) => {
-    if (e) e.preventDefault();
+	const handleTaillesChange = (taille) => {
+		setSelectedTailles((prev) =>
+		  prev.includes(taille)
+			? prev.filter((t) => t !== taille)
+			: [...prev, taille]
+		);
+	};
 
-    if (files.length === 0) {
-        toast.error('Aucun fichier sélectionné.');
-        return;
-    }
+	useEffect(() => {
+		const fetchData = async () => {
+		  try {
+			const querySnapshot = await getDocs(collection(firestore, "categories"));
+			const items = querySnapshot.docs.map(doc => ({
+			  id: doc.id,
+			  ...doc.data()
+			}));
+			setCategories(items);
+		  } catch (error) {
+			console.error("Error fetching data: ", error);
+		  }
+		};
 
-    setLoading(true);
+		fetchData();
+	}, []);
 
-    try {
-        const downloadURLs = [];
+	// Handle file selection
+	const handleFileChange = (e) => {
+		setFiles(e.target.files ? Array.from(e.target.files) : []);
+	};
 
-        const compressionOptions = {
-            maxSizeMB: 0.2,          // Target ~200 KB max per image
-            maxWidthOrHeight: 1200,  // Resize longest side to 1200px max
-            useWebWorker: true,      // Run compression off the main UI thread
-            fileType: "image/webp",  // Convert to WebP for much smaller egress
-            initialQuality: 0.8,
-        };
+	// Compress & upload files to Supabase Storage, then save to Firestore
+	const handleUpload = async (e) => {
+		if (e) e.preventDefault();
 
-        // Loop through all selected files, compress, and upload to Supabase
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            if (!file || file.size === 0) continue;
+		if (files.length === 0) {
+			toast.error('Aucun fichier sélectionné.');
+			return;
+		}
 
-            // Compress & resize in browser before uploading
-            const compressedFile = await imageCompression(file, compressionOptions);
+		setLoading(true);
 
-            // Base name without extension + unique timestamp & random suffix for immutability
-            const baseName = file.name
-                .replace(/\.[^/.]+$/, "")
-                .replace(/[^a-zA-Z0-9_-]/g, "_");
-            const uniqueSuffix = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-            const immutableFileName = `products/${uniqueSuffix}_${baseName}.webp`;
+		const compressionOptions = {
+			maxSizeMB: 0.18,         // ~180 KB instead of 50 KB
+			maxWidthOrHeight: 1100,  // Keeps sharper detail than 900px
+			fileType: "image/webp",
+			useWebWorker: true,
+		};
 
-            const { error: uploadError } = await supabase.storage
-                .from('products')
-                .upload(immutableFileName, compressedFile, {
-                    contentType: compressedFile.type || "image/webp",
-                    cacheControl: "31536000", // 1 year (31,536,000 seconds) for immutable files
-                    upsert: false,
-                });
+		try {
+			const downloadURLs = [];
 
-            if (uploadError) {
-                console.error("Upload failed:", uploadError);
-                throw uploadError;
-            }
+			// Loop through all selected files, compress each, and upload to Supabase
+			for (let i = 0; i < files.length; i++) {
+				const file = files[i];
+				if (!file || file.size === 0) continue;
 
-            // Get public URL
-            const { data: publicUrlData } = supabase.storage
-                .from('products')
-                .getPublicUrl(immutableFileName);
+				const compressedFile = await imageCompression(file, compressionOptions);
+				const sourceName = compressedFile.name || file.name;
+				const cleanFileName = `products/${Date.now()}_${i}_${sourceName.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
 
-            if (publicUrlData?.publicUrl) {
-                downloadURLs.push(publicUrlData.publicUrl);
-            }
-        }
+				const { error: uploadError } = await supabase.storage
+					.from('products')
+					.upload(cleanFileName, compressedFile, {
+						contentType: compressedFile.type || file.type,
+					});
 
-        if (downloadURLs.length === 0) {
-            toast.error('Aucun fichier valide à téléverser.');
-            return;
-        }
+				if (uploadError) {
+					console.error("Upload failed:", uploadError);
+					throw uploadError;
+				}
 
-        // Save product details along with image URLs to Firestore
-        await addDoc(collection(firestore, "produits"), {
-            name: newProduct.name,
-            description: newProduct.description,
-            price: Number(newProduct.price),
-            promotion: Number(newProduct.promotion),
-            offer2: Number(newProduct.offer2),
-            offer3: Number(newProduct.offer3),
-            category: newProduct.category,
-            tailles: selectedTailles,
-            colors: selectedColors,
-            type: newProduct.type,
-            images: downloadURLs, // Storing array of image URLs
-            s_poids: newProduct.s_poids,
-            m_poids: newProduct.m_poids,
-            l_poids: newProduct.l_poids,
-            xl_poids: newProduct.xl_poids,
-            xxl_poids: newProduct.xxl_poids,
-            xxxl_poids: newProduct.xxxl_poids,
-            s_tol: newProduct.s_tol,
-            m_tol: newProduct.m_tol,
-            l_tol: newProduct.l_tol,
-            xl_tol: newProduct.xl_tol,
-            xxl_tol: newProduct.xxl_tol,
-            xxxl_tol: newProduct.xxxl_tol,
-            isFeatured: false,
-            note: newProduct.note,
-            rating: Number(newProduct.rating),
-            prix_promo: Number(newProduct.prix_promo),
-            timestamp: new Date(),
-        });
+				const { data: publicUrlData } = supabase.storage
+					.from('products')
+					.getPublicUrl(cleanFileName);
 
-        toast.success('Le produit a été ajouté avec succès !');
-        resetForm();
-    } catch (error) {
-        console.error("Error adding product: ", error);
-        toast.error("Erreur: " + error.message);
-    } finally {
-        setLoading(false);
-    }
-};
+				if (publicUrlData?.publicUrl) {
+					downloadURLs.push(publicUrlData.publicUrl);
+				}
+			}
 
-    const resetForm = () => {
-        setNewProduct({
-            name: "",
-            description: "",
-            price: 0,
-            promotion: 0,
-            offer2: 0,
-            offer3: 0,
-            s_poids: "",
-            m_poids: "",
-            l_poids: "",
-            xl_poids: "",
-            xxl_poids: "",
-            xxxl_poids: "",
-            type: "",
-            s_tol: "",
-            m_tol: "",
-            l_tol: "",
-            xl_tol: "",
-            xxl_tol: "",
-            xxxl_tol: "",
-            category: "",
-            note: "",
-            prix_promo: 0,
-        });
-        setSelectedColors([]);
-        setSelectedTailles([]);
-        setFiles([]);
-    };
+			await addDoc(collection(firestore, "produits"), {
+				name: newProduct.name,
+				description: newProduct.description,
+				price: Number(newProduct.price),
+				promotion: Number(newProduct.promotion),
+				offer2: Number(newProduct.offer2),
+				offer3: Number(newProduct.offer3),
+				category: newProduct.category,
+				tailles: selectedTailles,
+				colors: selectedColors,
+				type: newProduct.type,
+				images: downloadURLs,
+				s_poids: newProduct.s_poids,
+				m_poids: newProduct.m_poids,
+				l_poids: newProduct.l_poids,
+				xl_poids: newProduct.xl_poids,
+				xxl_poids: newProduct.xxl_poids,
+				xxxl_poids: newProduct.xxxl_poids,
+				s_tol: newProduct.s_tol,
+				m_tol: newProduct.m_tol,
+				l_tol: newProduct.l_tol,
+				xl_tol: newProduct.xl_tol,
+				xxl_tol: newProduct.xxl_tol,
+				xxxl_tol: newProduct.xxxl_tol,
+				isFeatured: false,
+				note: newProduct.note,
+				rating: Number(newProduct.rating),
+				prix_promo: Number(newProduct.prix_promo),
+				timestamp: new Date(),
+			});
 
-    useEffect(() => {
-        document.title = "Admin | Produit";
-        window.scrollTo(0, 0);
-    }, []);
+			toast.success('Le produit a été ajouté avec succès !');
+			resetForm();
+		} catch (error) {
+			console.error("Error adding product: ", error);
+			toast.error("Erreur: " + error.message);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const resetForm = () => {
+		setNewProduct({
+			name: "",
+			description: "",
+			price: 0,
+			promotion: 0,
+			offer2: 0,
+			offer3: 0,
+			s_poids: "",
+			m_poids: "",
+			l_poids: "",
+			xl_poids: "",
+			xxl_poids: "",
+			xxxl_poids: "",
+			type: "",
+			s_tol: "",
+			m_tol: "",
+			l_tol: "",
+			xl_tol: "",
+			xxl_tol: "",
+			xxxl_tol: "",
+			category: "",
+			note: "",
+			prix_promo: 0,
+		});
+		setSelectedColors([]);
+		setSelectedTailles([]);
+		setFiles([]);
+	};
+
+
+	useEffect(() => {
+		document.title = "Admin | Produit";
+		window.scrollTo(0, 0);
+	}, []);
 	return (
 		<div
 			className='bg-gray-800 shadow-lg rounded-lg p-8 mb-8 max-w-xl mx-auto'
