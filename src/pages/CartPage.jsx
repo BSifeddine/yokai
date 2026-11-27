@@ -31,7 +31,7 @@ const CartPage = ({cart, setCart}) => {
           setCart((prevCart) => prevCart.filter((_, i) => i !== index));
         };
     
-        useEffect(() => {
+        useEffect(() => { 
           if(hasLoaded){
               localStorage.setItem("cart", JSON.stringify(cart));
             }
