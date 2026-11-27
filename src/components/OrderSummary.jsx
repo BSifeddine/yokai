@@ -321,7 +321,7 @@ const OrderSummary = ({ cart , setCart }) => {
 	return (
 		<div className="border border-gray-100 rounded-lg shadow-lg bg-white p-5">
 			<div className="flex justify-end">
-				<p className='text-xl font-bold text-orange-500 justify-self-end pb-4'>ملخص الطلبية</p>
+				<p className='text-xl font-bold text-red-500 justify-self-end pb-4'>ملخص الطلبية</p>
 			</div>
 
 			<div className='space-y-4'>
@@ -406,12 +406,12 @@ const OrderSummary = ({ cart , setCart }) => {
             <div className='flex flex-col w-full'>
       <div className='flex justify-between mb-2 items-center'>
         {formData.wilaya? 
-          <div className='flex gap-1 items-center justify-center bg-orange-500 rounded-lg px-3 h-8'>
+          <div className='flex gap-1 items-center justify-center bg-red-500 rounded-lg px-3 h-8'>
             <p className='text-white font-bold'>دج</p>
             <p className='text-white font-bold'>{formData.montant_livraison}</p>
           </div>
         :
-          <div className='flex gap-1 items-center justify-center bg-orange-500 rounded-lg px-3 h-8'>
+          <div className='flex gap-1 items-center justify-center bg-red-500 rounded-lg px-3 h-8'>
             <p className='text-white font-bold'>اختر الولاية</p>
           </div>
         }
@@ -423,7 +423,7 @@ const OrderSummary = ({ cart , setCart }) => {
       {/* sd */}
       <div className="mb-2 flex flex-col items-end w-full">
         <button type='button' onClick={() => setFormData({...formData, type_livraison: "sd", montant_livraison: sd})}
-          className={`${formData.type_livraison === "sd" && formData.wilaya ? "border-2 border-orange-500": "border-gray-300"} block w-full cursor-pointer ${sd != 0 && formData.wilaya && formData.type_livraison != "sd" && "hover:border-gray-400"} text-right px-4 py-2 border bg-white rounded-md shadow-sm focus:outline-none text-orange-500`}
+          className={`${formData.type_livraison === "sd" && formData.wilaya ? "border-2 border-red-500": "border-gray-300"} block w-full cursor-pointer ${sd != 0 && formData.wilaya && formData.type_livraison != "sd" && "hover:border-gray-400"} text-right px-4 py-2 border bg-white rounded-md shadow-sm focus:outline-none text-red-500`}
           disabled = {!formData.wilaya || sd == 0 ? true : false}
         >
         {formData.wilaya ? 
@@ -457,7 +457,7 @@ const OrderSummary = ({ cart , setCart }) => {
       {/* domicile */}
       <div className="mb-2 flex flex-col items-end w-full">
         <button type='button' onClick={() => setFormData({...formData, type_livraison: "domicile", montant_livraison: domicile})}
-          className={`${formData.type_livraison === "domicile" && formData.wilaya ? "border-2 border-orange-500": "border-gray-300"} block w-full cursor-pointer ${formData.wilaya && formData.type_livraison != "domicile" && "hover:border-gray-400"} text-right px-4 py-2 border bg-white rounded-md shadow-sm focus:outline-none text-orange-500`}
+          className={`${formData.type_livraison === "domicile" && formData.wilaya ? "border-2 border-red-500": "border-gray-300"} block w-full cursor-pointer ${formData.wilaya && formData.type_livraison != "domicile" && "hover:border-gray-400"} text-right px-4 py-2 border bg-white rounded-md shadow-sm focus:outline-none text-red-500`}
           disabled = {!formData.wilaya ? true : false}
         >
           <div className='flex justify-between'>
@@ -523,7 +523,7 @@ const OrderSummary = ({ cart , setCart }) => {
 				</div>
 
 				<button
-					className="w-full flex items-center gap-1 justify-center bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
+					className="w-full flex items-center gap-1 justify-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
 		  			onClick={handleSubmit}
 				>
 					<ShoppingBag className='inline-block mr-1' size={20}/>
@@ -533,7 +533,7 @@ const OrderSummary = ({ cart , setCart }) => {
 				<div className='flex items-center justify-center gap-2'>
 					<Link
 						to='/'
-						className='inline-flex items-center gap-2 text-sm font-medium text-orange-400 underline hover:text-orange-300 hover:no-underline'
+						className='inline-flex items-center gap-2 text-sm font-medium text-red-400 underline hover:text-red-300 hover:no-underline'
 					>
 						<MoveLeft size={16} />
 						واصل التسوق

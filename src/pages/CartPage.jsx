@@ -42,7 +42,7 @@ const CartPage = ({cart, setCart}) => {
         }, []);
 
     useEffect(() => {
-        document.title = "Art Tshirt | Panier"
+        document.title = "YOKAI | Panier"
         window.scrollTo(0, 0);
       }, []); 
 

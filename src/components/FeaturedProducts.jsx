@@ -73,7 +73,7 @@ const FeaturedProducts = () => {
 	return (
 	<div className='py-4'>
 		<div className='container mx-auto px-1'>
-				<h2 className='text-center text-4xl md:text-6xl font-bold text-orange-500 mb-4 pt-8'>منتجاتنا المميزة</h2>
+				<h2 className='text-center text-4xl md:text-6xl font-bold text-red-500 mb-4 pt-8'>منتجاتنا المميزة</h2>
 				<p className='text-center text-xl md:text-2xl font-semibold text-gray-700 mb-10'>
 					أكثر المنتجات طلبا
 				</p>
